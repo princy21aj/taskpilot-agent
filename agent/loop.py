@@ -11,21 +11,35 @@ client = OpenAI(
 )
 MODEL = "openai/gpt-oss-120b"  # use the one that worked for you
 MAX_STEPS = 5
-SYSTEM_PROMPT = "You are TaskPilot. Use your tools when needed, then answer clearly."
+MEMORY_SIZE = 10  # how many past messages to remember
+
+SYSTEM_PROMPT = (
+    "You are TaskPilot, a helpful assistant. Use your tools when needed. "
+    "In your final answer, always include the actual data you found "
+    "(numbers, facts, saved text), not just a statement that you did the task. "
+    "Keep answers short and clear."
+)
+
+# Short-term memory: only the user's questions and TaskPilot's final answers
+history = []
 
 
 def run_agent(user_message):
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_message},
-    ]
+    messages = (
+        [{"role": "system", "content": SYSTEM_PROMPT}]
+        + history[-MEMORY_SIZE:]
+        + [{"role": "user", "content": user_message}]
+    )
+
     for step in range(1, MAX_STEPS + 1):
         response = client.chat.completions.create(
             model=MODEL, messages=messages, tools=TOOLS
         )
         msg = response.choices[0].message
 
-        if not msg.tool_calls:      # no tool needed -> final answer
+        if not msg.tool_calls:  # no tool needed -> final answer
+            history.append({"role": "user", "content": user_message})
+            history.append({"role": "assistant", "content": msg.content})
             return msg.content
 
         messages.append(msg)

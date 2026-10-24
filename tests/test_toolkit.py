@@ -19,5 +19,13 @@ def test_read_notes_uses_temporary_file(monkeypatch, tmp_path):
     assert toolkit.read_notes() == "Test note\n"
 
 
+def test_notes_can_be_kept_in_a_session():
+    notes = []
+
+    assert toolkit.save_note("Buy milk", notes=notes) == "Note saved."
+    assert "Buy milk" in toolkit.read_notes(notes=notes)
+    assert toolkit.read_notes(notes=[]) == "No notes yet."
+
+
 def test_get_current_time_format():
     datetime.strptime(toolkit.get_current_time(), "%Y-%m-%d %H:%M:%S")

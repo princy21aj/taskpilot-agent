@@ -15,7 +15,7 @@ An AI agent that decides which tools to use, runs them, and answers using the re
 4. This repeats (maximum 5 steps) until the LLM gives a final answer.
 
 ## Tech
-Python · OpenAI-compatible API (Groq, works with OpenAI) · Open-Meteo · Wikipedia API · python-dotenv
+Python · Streamlit · OpenAI-compatible API (Groq, works with OpenAI) · Open-Meteo · Wikipedia API · python-dotenv
 
 ## Run it
 git clone https://github.com/princy21aj/taskpilot-agent
@@ -37,10 +37,6 @@ optionally change `OPENAI_MODEL`; it defaults to `gpt-4o-mini`.
 Only the API key for the selected provider is used.
 To list the selected provider's available models, run `python -m scripts.list_models`.
 
-## Memory
-TaskPilot saves the last 10 chat messages in `memory.json` and loads them the
-next time it starts. Type `reset` in the app to clear the saved memory.
-
 ## Example
 You: Check the weather in Dindigul and save a note with the result.
 [step 1] tool: get_weather
@@ -51,8 +47,25 @@ TaskPilot: Dindigul: 29.1 °C, humidity 72%. Note saved.
 ## Run tests
 pytest
 
+## Live demo
+[Try TaskPilot](#) (demo link coming soon)
+
+## Run the web app
+Install dependencies, then run:
+
+```powershell
+streamlit run streamlit_app.py
+```
+
+For Streamlit hosting, add `PROVIDER` and the selected provider's API key to
+Streamlit secrets (for example, `PROVIDER = "groq"` and
+`GROQ_API_KEY = "your-key"`). The web app keeps chat history and notes in each
+visitor's session. The command-line app continues to read its configuration
+from `.env` and save notes to `notes.txt`; its chat history lasts for the
+current run and can be cleared by typing `reset`.
+
 ## What I learned
 Function calling, agent loops, API integration, error handling, short-term memory.
 
 ## Next steps
-Add more tools (web search, email), long-term memory, and a web interface.
+Add more tools (web search, email) and long-term memory.

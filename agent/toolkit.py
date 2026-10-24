@@ -10,13 +10,20 @@ def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def save_note(text):
+def save_note(text, notes=None):
+    if notes is not None:
+        notes.append(f"[{get_current_time()}] {text}")
+        return "Note saved."
+
     with open(NOTES_FILE, "a", encoding="utf-8") as f:
         f.write(f"[{get_current_time()}] {text}\n")
     return "Note saved."
 
 
-def read_notes():
+def read_notes(notes=None):
+    if notes is not None:
+        return "\n".join(notes) if notes else "No notes yet."
+
     if not NOTES_FILE.exists():
         return "No notes yet."
     return NOTES_FILE.read_text(encoding="utf-8")

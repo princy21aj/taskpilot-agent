@@ -1,17 +1,12 @@
 import json
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
+from pathlib import Path
+
+from agent.config import MODEL, PROVIDER, client
 from agent.toolkit import TOOLS, TOOL_FUNCTIONS
 
-load_dotenv()
-client = OpenAI(
-    api_key=os.getenv("GROQ_API_KEY"),
-    base_url="https://api.groq.com/openai/v1",
-)
-MODEL = "openai/gpt-oss-120b"  # use the one that worked for you
 MAX_STEPS = 5
 MEMORY_SIZE = 10  # how many past messages to remember
+MEMORY_FILE = Path("memory.json")
 
 SYSTEM_PROMPT = (
     "You are TaskPilot, a helpful assistant. Use your tools when needed. "
@@ -20,8 +15,25 @@ SYSTEM_PROMPT = (
     "Keep answers short and clear."
 )
 
-# Short-term memory: only the user's questions and TaskPilot's final answers
-history = []
+# Remember only the user's questions and TaskPilot's final answers.
+if MEMORY_FILE.exists():
+    history = json.loads(MEMORY_FILE.read_text(encoding="utf-8"))
+else:
+    history = []
+
+print(f"Using provider: {PROVIDER} (model: {MODEL})")
+
+
+def save_memory():
+    MEMORY_FILE.write_text(
+        json.dumps(history[-MEMORY_SIZE:], indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def clear_memory():
+    history.clear()
+    save_memory()
 
 
 def run_agent(user_message):
@@ -40,6 +52,8 @@ def run_agent(user_message):
         if not msg.tool_calls:  # no tool needed -> final answer
             history.append({"role": "user", "content": user_message})
             history.append({"role": "assistant", "content": msg.content})
+            history[:] = history[-MEMORY_SIZE:]
+            save_memory()
             return msg.content
 
         messages.append(msg)

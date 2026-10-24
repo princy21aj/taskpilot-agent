@@ -26,12 +26,30 @@ pip install -r requirements.txt
 copy .env.example .env   (then add your API key to .env)
 python app.py
 
+## Configuration
+The default provider is Groq. In `.env`, set `PROVIDER=groq` and add your
+`GROQ_API_KEY`. You can optionally change `GROQ_MODEL`; it defaults to
+`openai/gpt-oss-120b`.
+
+To use OpenAI, set `PROVIDER=openai` and add your `OPENAI_API_KEY`. You can
+optionally change `OPENAI_MODEL`; it defaults to `gpt-4o-mini`.
+
+Only the API key for the selected provider is used.
+To list the selected provider's available models, run `python -m scripts.list_models`.
+
+## Memory
+TaskPilot saves the last 10 chat messages in `memory.json` and loads them the
+next time it starts. Type `reset` in the app to clear the saved memory.
+
 ## Example
 You: Check the weather in Dindigul and save a note with the result.
 [step 1] tool: get_weather
 [step 2] tool: get_current_time
 [step 3] tool: save_note
 TaskPilot: Dindigul: 29.1 °C, humidity 72%. Note saved.
+
+## Run tests
+pytest
 
 ## What I learned
 Function calling, agent loops, API integration, error handling, short-term memory.

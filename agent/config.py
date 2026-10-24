@@ -1,24 +1,32 @@
 import os
+from collections.abc import Mapping
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv()
 
-PROVIDER = os.getenv("PROVIDER", "groq").strip().lower()
+def create_client(settings: Mapping[str, str] | None = None):
+    if settings is None:
+        load_dotenv()
+        get_setting = os.getenv
+    else:
+        get_setting = settings.get
 
-if PROVIDER == "groq":
-    MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
-    API_KEY = os.getenv("GROQ_API_KEY")
-    BASE_URL = "https://api.groq.com/openai/v1"
-elif PROVIDER == "openai":
-    MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    API_KEY = os.getenv("OPENAI_API_KEY")
-    BASE_URL = None
-else:
-    raise ValueError("PROVIDER must be 'groq' or 'openai'.")
+    provider = get_setting("PROVIDER", "groq").strip().lower()
 
-if BASE_URL:
-    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-else:
-    client = OpenAI(api_key=API_KEY)
+    if provider == "groq":
+        model = get_setting("GROQ_MODEL", "openai/gpt-oss-120b")
+        api_key = get_setting("GROQ_API_KEY")
+        base_url = "https://api.groq.com/openai/v1"
+    elif provider == "openai":
+        model = get_setting("OPENAI_MODEL", "gpt-4o-mini")
+        api_key = get_setting("OPENAI_API_KEY")
+        base_url = None
+    else:
+        raise ValueError("PROVIDER must be 'groq' or 'openai'.")
+
+    if not api_key:
+        raise ValueError(f"{provider.upper()} API key is not configured.")
+
+    client = OpenAI(api_key=api_key, base_url=base_url) if base_url else OpenAI(api_key=api_key)
+    return client, model
